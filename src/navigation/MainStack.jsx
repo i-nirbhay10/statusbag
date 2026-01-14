@@ -2,6 +2,7 @@ import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 // import DrawerNavigator from './DrawerNavigator';
 import BottomTabNavigator from './BottomTabNavigator';
+import ImagePreviewScreen from '../screens/ImagePreviewScreen';
 // import SavedScreen from '../screens/SavedScreen';
 // import SettingsScreen from '../screens/SettingsScreen';
 
@@ -13,7 +14,7 @@ export default function MainStack() {
       {/* Root Drawer */}
       {/* <Stack.Screen name="RootDrawer" component={DrawerNavigator} /> */}
       <Stack.Screen name="RootDrawer" component={BottomTabNavigator} />
-
+      <Stack.Screen name="ImagePreview" component={ImagePreviewScreen} />
       {/* Example Stack Screens */}
       {/* <Stack.Screen name="Saved" component={SavedScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} /> */}
