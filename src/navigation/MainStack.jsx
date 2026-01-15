@@ -3,6 +3,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 // import DrawerNavigator from './DrawerNavigator';
 import BottomTabNavigator from './BottomTabNavigator';
 import ImagePreviewScreen from '../screens/ImagePreviewScreen';
+import Pricing from '../screens/Pricing';
 // import SavedScreen from '../screens/SavedScreen';
 // import SettingsScreen from '../screens/SettingsScreen';
 
@@ -15,9 +16,7 @@ export default function MainStack() {
       {/* <Stack.Screen name="RootDrawer" component={DrawerNavigator} /> */}
       <Stack.Screen name="RootDrawer" component={BottomTabNavigator} />
       <Stack.Screen name="ImagePreview" component={ImagePreviewScreen} />
-      {/* Example Stack Screens */}
-      {/* <Stack.Screen name="Saved" component={SavedScreen} />
-      <Stack.Screen name="Settings" component={SettingsScreen} /> */}
+      <Stack.Screen name="Pricing" component={Pricing} />
     </Stack.Navigator>
   );
 }

@@ -115,22 +115,6 @@ export default function SavedScreen() {
         columnWrapperStyle={{justifyContent: 'space-between', marginBottom: 12}}
         contentContainerStyle={{paddingHorizontal: 16, paddingBottom: 120}}
       />
-
-      {/* Bottom Tab Bar */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.tabButton}>
-          <MaterialIcons name="schedule" size={24} color="#888" />
-          <Text style={styles.tabText}>Status</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabButtonActive}>
-          <MaterialIcons name="folder" size={24} color="#13ec5b" />
-          <Text style={[styles.tabText, {color: '#13ec5b'}]}>Saved</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabButton}>
-          <MaterialIcons name="settings" size={24} color="#888" />
-          <Text style={styles.tabText}>Settings</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -200,18 +184,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-    backgroundColor: '#fff',
-  },
-  tabButton: {alignItems: 'center', justifyContent: 'center'},
-  tabButtonActive: {alignItems: 'center', justifyContent: 'center'},
-  tabText: {fontSize: 10, fontWeight: '700', color: '#888', marginTop: 2},
 });

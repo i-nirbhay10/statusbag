@@ -33,7 +33,7 @@ export default function SettingsScreen({navigation}) {
 
         <TouchableOpacity
           style={styles.row}
-          onPress={() => navigation.navigate('Prizing')}>
+          onPress={() => navigation.navigate('Pricing')}>
           <View style={styles.rowLeft}>
             <View style={[styles.iconBox, styles.proIcon]}>
               <Icon name="workspace-premium" size={22} color="#13ec5b" />

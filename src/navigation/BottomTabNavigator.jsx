@@ -1,27 +1,12 @@
 import React from 'react';
-import {Text, View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {responsiveFontSize as rf} from 'react-native-responsive-dimensions';
 import StatusSaverHome from '../screens/StatusSaverHome';
+import SavedScreen from '../screens/SavedScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
-
-function SavedScreen() {
-  return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Text>Saved Screen</Text>
-    </View>
-  );
-}
-
-function SettingsScreen() {
-  return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Text>Settings Screen</Text>
-    </View>
-  );
-}
 
 export default function BottomTabNavigator() {
   return (
@@ -37,7 +22,8 @@ export default function BottomTabNavigator() {
         },
         tabBarActiveTintColor: '#13ec5b',
         tabBarInactiveTintColor: '#9ca3af',
-        tabBarLabelStyle: {fontSize: rf(1.3), fontWeight: 'bold'},
+
+        tabBarLabelStyle: {fontSize: rf(1.3), fontWeight: 'bold', height: 50},
       })}>
       <Tab.Screen name="Home" component={StatusSaverHome} />
       <Tab.Screen name="Saved" component={SavedScreen} />
