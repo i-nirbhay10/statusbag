@@ -1,21 +1,24 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Platform} from 'react-native';
 import {
   responsiveHeight as hp,
   responsiveWidth as wp,
   responsiveFontSize as rf,
 } from 'react-native-responsive-dimensions';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import colors from '../theme/colors';
 
 export default function TopBar() {
   return (
     <View style={styles.container}>
       <View style={styles.leftContainer}>
-        <MaterialIcons name="menu" size={rf(3)} color="#111813" />
+        <TouchableOpacity style={styles.iconButton}>
+          <MaterialIcons name="menu" size={rf(3.2)} color={colors.textLight} />
+        </TouchableOpacity>
         <Text style={styles.title}>Status Saver</Text>
       </View>
-      <TouchableOpacity style={styles.crownButton}>
-        <MaterialIcons name="crown" size={rf(3)} color="#13ec5b" />
+      <TouchableOpacity style={styles.premiumButton} activeOpacity={0.8}>
+        <MaterialIcons name="workspace-premium" size={rf(3)} color={colors.primaryDark} />
       </TouchableOpacity>
     </View>
   );
@@ -27,26 +30,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: wp(4),
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-    backgroundColor: '#fff',
+    paddingHorizontal: wp(3),
+    backgroundColor: colors.white,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   leftContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: wp(2), // gap is supported in newer React Native versions
+    gap: wp(3),
+  },
+  iconButton: {
+    padding: wp(1),
   },
   title: {
-    fontSize: rf(2.2),
-    fontWeight: 'bold',
-    color: '#111813',
+    fontSize: rf(2.4),
+    fontWeight: '700',
+    color: colors.secondary,
+    letterSpacing: 0.5,
   },
-  crownButton: {
-    height: hp(5),
-    width: hp(5),
-    borderRadius: hp(2.5),
-    backgroundColor: '#13ec5b22',
+  premiumButton: {
+    height: hp(5.5),
+    width: hp(5.5),
+    borderRadius: hp(2.75),
+    backgroundColor: colors.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
   },

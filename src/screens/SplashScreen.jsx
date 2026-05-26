@@ -3,15 +3,18 @@ import {View, Text, StyleSheet, StatusBar} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Loader from '../components/Loader';
 import colors from '../theme/colors';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const SplashScreen = ({navigation}) => {
+  const insets = useSafeAreaInsets();
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace('RootDrawer'); // change later
+      navigation.replace('RootDrawer');
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
@@ -21,24 +24,24 @@ const SplashScreen = ({navigation}) => {
       />
 
       {/* Top Spacer */}
-      <View style={{height: 40}} />
+      <View style={{height: insets.top > 0 ? insets.top + 40 : 40}} />
 
       {/* Center Content */}
       <View style={styles.centerContent}>
         {/* App Icon */}
         <View style={styles.iconWrapper}>
-          <Icon name="folder-zip" size={72} color="#fff" />
+          <Icon name="folder-zip" size={72} color={colors.white} />
           <View style={styles.downloadIcon}>
-            <Icon name="download" size={32} color="#fff" />
+            <Icon name="file-download" size={32} color={colors.white} />
           </View>
         </View>
 
         {/* App Name */}
-        <Text style={styles.title}>StatusSave</Text>
+        <Text style={styles.title}>StatusBag</Text>
       </View>
 
       {/* Bottom Loader */}
-      <View style={styles.bottomSection}>
+      <View style={[styles.bottomSection, {paddingBottom: insets.bottom > 0 ? insets.bottom + 20 : 64}]}>
         <Loader />
         <Text style={styles.subtitle}>Fast & Secure</Text>
       </View>
@@ -67,9 +70,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.primary,
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: {width: 0, height: 8},
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 12,
   },
   downloadIcon: {
     position: 'absolute',
@@ -82,13 +86,14 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   bottomSection: {
-    paddingBottom: 64,
     alignItems: 'center',
     gap: 12,
   },
   subtitle: {
     fontSize: 14,
-    color: 'rgba(17,24,19,0.4)',
+    color: colors.grayMedium,
     fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 });

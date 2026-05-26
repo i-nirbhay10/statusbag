@@ -6,26 +6,23 @@ import {
   TouchableOpacity,
   Switch,
   ScrollView,
-  SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Header from '../components/Header';
+import colors from '../theme/colors';
 
 export default function SettingsScreen({navigation}) {
   const [autoSave, setAutoSave] = useState(true);
   const [notifications, setNotifications] = useState(true);
 
   return (
-    <SafeAreaView style={styles.safe}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back-ios" size={22} color="#111813" />
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>App Settings</Text>
-
-        <Icon name="search" size={22} color="#111813" />
-      </View>
+    <View style={styles.safe}>
+      <Header 
+        title="App Settings"
+        leftIcon="arrow-back-ios"
+        onLeftPress={() => navigation.goBack()}
+        rightIcon="search"
+      />
 
       <ScrollView contentContainerStyle={styles.container}>
         {/* ACCOUNT */}
@@ -36,7 +33,7 @@ export default function SettingsScreen({navigation}) {
           onPress={() => navigation.navigate('Pricing')}>
           <View style={styles.rowLeft}>
             <View style={[styles.iconBox, styles.proIcon]}>
-              <Icon name="workspace-premium" size={22} color="#13ec5b" />
+              <Icon name="workspace-premium" size={22} color={colors.primary} />
             </View>
             <View>
               <Text style={styles.rowTitle}>Upgrade to Pro</Text>
@@ -45,7 +42,7 @@ export default function SettingsScreen({navigation}) {
               </Text>
             </View>
           </View>
-          <Icon name="chevron-right" size={24} color="#9ca3af" />
+          <Icon name="chevron-right" size={24} color={colors.grayMedium} />
         </TouchableOpacity>
 
         <Divider />
@@ -56,15 +53,15 @@ export default function SettingsScreen({navigation}) {
         <View style={styles.row}>
           <View style={styles.rowLeft}>
             <View style={styles.iconBox}>
-              <Icon name="download-done" size={22} color="#6b7280" />
+              <Icon name="download-done" size={22} color={colors.grayDark} />
             </View>
             <Text style={styles.rowTitle}>Auto-save Statuses</Text>
           </View>
           <Switch
             value={autoSave}
             onValueChange={setAutoSave}
-            trackColor={{false: '#e5e7eb', true: '#13ec5b'}}
-            thumbColor="#ffffff"
+            trackColor={{false: colors.grayLight, true: colors.primary}}
+            thumbColor={colors.white}
           />
         </View>
 
@@ -73,15 +70,15 @@ export default function SettingsScreen({navigation}) {
         <View style={styles.row}>
           <View style={styles.rowLeft}>
             <View style={styles.iconBox}>
-              <Icon name="notifications-active" size={22} color="#6b7280" />
+              <Icon name="notifications-active" size={22} color={colors.grayDark} />
             </View>
             <Text style={styles.rowTitle}>Push Notifications</Text>
           </View>
           <Switch
             value={notifications}
             onValueChange={setNotifications}
-            trackColor={{false: '#e5e7eb', true: '#13ec5b'}}
-            thumbColor="#ffffff"
+            trackColor={{false: colors.grayLight, true: colors.primary}}
+            thumbColor={colors.white}
           />
         </View>
 
@@ -90,13 +87,13 @@ export default function SettingsScreen({navigation}) {
         <TouchableOpacity style={styles.row}>
           <View style={styles.rowLeft}>
             <View style={styles.iconBox}>
-              <Icon name="folder-open" size={22} color="#6b7280" />
+              <Icon name="folder-open" size={22} color={colors.grayDark} />
             </View>
             <Text style={styles.rowTitle}>Storage Path</Text>
           </View>
           <View style={styles.rowRight}>
             <Text style={styles.pathText}>/Internal/Status</Text>
-            <Icon name="chevron-right" size={24} color="#9ca3af" />
+            <Icon name="chevron-right" size={24} color={colors.grayMedium} />
           </View>
         </TouchableOpacity>
 
@@ -111,11 +108,11 @@ export default function SettingsScreen({navigation}) {
 
         {/* FOOTER */}
         <View style={styles.footer}>
-          <Text style={styles.version}>Status Saver v2.4.0</Text>
+          <Text style={styles.version}>StatusBag v2.4.0</Text>
           <Text style={styles.made}>Made with ❤️ for Indian Users</Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -134,11 +131,11 @@ function SettingsLink({icon, label}) {
     <TouchableOpacity style={styles.row}>
       <View style={styles.rowLeft}>
         <View style={styles.iconBox}>
-          <Icon name={icon} size={22} color="#6b7280" />
+          <Icon name={icon} size={22} color={colors.grayDark} />
         </View>
         <Text style={styles.rowTitle}>{label}</Text>
       </View>
-      <Icon name="chevron-right" size={24} color="#9ca3af" />
+      <Icon name="chevron-right" size={24} color={colors.grayMedium} />
     </TouchableOpacity>
   );
 }
@@ -148,22 +145,7 @@ function SettingsLink({icon, label}) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#ffffff',
-  },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderColor: '#e5e7eb',
-    justifyContent: 'space-between',
-  },
-
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111813',
+    backgroundColor: colors.backgroundLight,
   },
 
   container: {
@@ -173,7 +155,7 @@ const styles = StyleSheet.create({
   section: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#6b7280',
+    color: colors.grayDark,
     letterSpacing: 1.5,
     marginTop: 24,
     marginBottom: 8,
@@ -187,7 +169,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.white,
   },
 
   rowLeft: {
@@ -206,12 +188,12 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#111813',
+    color: colors.textLight,
   },
 
   rowSub: {
     fontSize: 13,
-    color: '#6b7280',
+    color: colors.grayDark,
     marginTop: 2,
   },
 
@@ -219,24 +201,24 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#f6f8f6',
+    backgroundColor: colors.backgroundLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   proIcon: {
-    backgroundColor: 'rgba(19,236,91,0.15)',
+    backgroundColor: colors.primaryLight,
   },
 
   divider: {
     height: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: colors.grayLight,
     marginHorizontal: 16,
   },
 
   pathText: {
     fontSize: 13,
-    color: '#9ca3af',
+    color: colors.grayMedium,
   },
 
   footer: {
@@ -247,7 +229,7 @@ const styles = StyleSheet.create({
 
   version: {
     fontSize: 11,
-    color: '#9ca3af',
+    color: colors.grayMedium,
     fontWeight: '600',
     letterSpacing: 1,
     textTransform: 'uppercase',
@@ -255,6 +237,6 @@ const styles = StyleSheet.create({
 
   made: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: colors.grayMedium,
   },
 });

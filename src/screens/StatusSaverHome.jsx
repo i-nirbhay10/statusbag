@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {
-  SafeAreaView,
   View,
   TouchableOpacity,
   Text,
@@ -12,9 +11,10 @@ import {
 import RNFS from 'react-native-fs';
 import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
-import TopBar from '../components/TopBar';
+import Header from '../components/Header';
 import ImageGrid from '../components/ImageGrid';
 import EmptyState from '../components/EmptyState';
+import colors from '../theme/colors';
 
 import {
   responsiveHeight as hp,
@@ -162,8 +162,11 @@ export default function StatusSaverHome() {
   /* ---------------- UI ---------------- */
 
   return (
-    <SafeAreaView style={styles.container}>
-      <TopBar />
+    <View style={styles.container}>
+      <Header 
+        title="StatusBag" 
+        rightIcon="workspace-premium" 
+      />
 
       {/* Tabs */}
       <View style={styles.tabContainer}>
@@ -214,7 +217,7 @@ export default function StatusSaverHome() {
           <ImageGrid data={statuses} isVideo={activeTab === 'videos'} />
         </>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -223,30 +226,32 @@ export default function StatusSaverHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f6f8f6',
+    backgroundColor: colors.backgroundLight,
   },
   tabContainer: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.grayLight,
+    backgroundColor: colors.white,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: hp(2),
-    borderBottomWidth: 2,
+    borderBottomWidth: 3,
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: '#13ec5b',
+    borderBottomColor: colors.primary,
   },
   tabText: {
     fontSize: rf(1.8),
-    fontWeight: 'bold',
-    color: '#9ca3af',
+    fontWeight: '600',
+    color: colors.grayMedium,
   },
   activeTabText: {
-    color: '#13ec5b',
+    color: colors.primaryDark,
+    fontWeight: 'bold',
   },
   loader: {
     flex: 1,

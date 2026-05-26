@@ -15,6 +15,7 @@ import {
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {useNavigation} from '@react-navigation/native';
+import colors from '../theme/colors';
 
 /* ---------------- Component ---------------- */
 
@@ -44,11 +45,18 @@ export default function ImageGrid({data = [], isVideo = false}) {
         source={{uri: item.path || item}}
         style={styles.image}
         resizeMode="cover">
+        
+        {isVideo && (
+          <View style={styles.playIconContainer}>
+            <MaterialIcons name="play-circle-outline" size={rf(4)} color="rgba(255,255,255,0.8)" />
+          </View>
+        )}
+
         <TouchableOpacity
           style={styles.downloadButton}
           onPress={() => onDownloadPress(item)}
           activeOpacity={0.8}>
-          <MaterialIcons name="download" size={rf(2)} color="#fff" />
+          <MaterialIcons name="file-download" size={rf(2.4)} color={colors.white} />
         </TouchableOpacity>
       </ImageBackground>
     </TouchableOpacity>
@@ -70,30 +78,47 @@ export default function ImageGrid({data = [], isVideo = false}) {
 
 const styles = StyleSheet.create({
   list: {
-    padding: wp(1),
+    padding: wp(1.5),
+    paddingBottom: hp(10), // Padding for bottom nav
   },
   card: {
     width: wp(30),
-    aspectRatio: 4 / 5,
-    margin: wp(0.7),
-    borderRadius: wp(2),
+    aspectRatio: 3 / 4,
+    margin: wp(1),
+    borderRadius: wp(3),
     overflow: 'hidden',
-    backgroundColor: '#e5e7eb',
+    backgroundColor: colors.grayLight,
+    elevation: 2, // shadow for android
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   image: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  playIconContainer: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   downloadButton: {
     position: 'absolute',
     bottom: hp(1),
-    right: wp(1),
-    height: hp(4),
-    width: hp(4),
-    borderRadius: hp(2),
-    backgroundColor: '#13ec5b',
+    right: wp(1.5),
+    height: hp(4.5),
+    width: hp(4.5),
+    borderRadius: hp(2.25),
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
 });
 

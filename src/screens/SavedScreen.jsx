@@ -9,6 +9,8 @@ import {
   Dimensions,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Header from '../components/Header';
+import colors from '../theme/colors';
 
 const {width} = Dimensions.get('window');
 const GRID_ITEM_SIZE = (width - 48) / 2; // 16px padding on both sides + 8px gap
@@ -72,18 +74,17 @@ export default function SavedScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Top AppBar */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.backButton}>
-            <MaterialIcons name="arrow-back-ios" size={20} color="#111" />
+      {/* Top AppBar using modular Header */}
+      <Header 
+        title="Your Downloads"
+        leftIcon="arrow-back-ios"
+        onLeftPress={() => {}} // Navigation can be injected
+        rightCustomComponent={
+          <TouchableOpacity style={styles.selectButton}>
+            <Text style={styles.selectButtonText}>Select</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Your Downloads</Text>
-        </View>
-        <TouchableOpacity style={styles.selectButton}>
-          <Text style={styles.selectButtonText}>Select</Text>
-        </TouchableOpacity>
-      </View>
+        }
+      />
 
       {/* Filter Segmented Buttons */}
       <View style={styles.segmented}>
@@ -120,31 +121,18 @@ export default function SavedScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#f6f8f6'},
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    backgroundColor: '#fff',
-  },
-  headerLeft: {flexDirection: 'row', alignItems: 'center', gap: 8},
-  backButton: {padding: 8},
-  headerTitle: {fontSize: 18, fontWeight: '700', color: '#111'},
+  container: {flex: 1, backgroundColor: colors.backgroundLight},
   selectButton: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: 'rgba(19,236,91,0.1)',
+    backgroundColor: colors.primaryLight,
   },
-  selectButtonText: {color: '#13ec5b', fontWeight: '700', fontSize: 14},
+  selectButtonText: {color: colors.primaryDark, fontWeight: '700', fontSize: 14},
   segmented: {
     flexDirection: 'row',
     margin: 16,
-    backgroundColor: '#eee',
+    backgroundColor: colors.grayLight,
     borderRadius: 16,
     padding: 4,
   },
@@ -153,11 +141,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
   },
-  segmentButtonActive: {backgroundColor: '#fff'},
-  segmentText: {color: '#888', fontWeight: '600'},
-  segmentTextActive: {color: '#111'},
+  segmentButtonActive: {backgroundColor: colors.white},
+  segmentText: {color: colors.grayMedium, fontWeight: '600'},
+  segmentTextActive: {color: colors.textLight, fontWeight: 'bold'},
   gridItem: {
     width: GRID_ITEM_SIZE,
     height: GRID_ITEM_SIZE * 1.33,
