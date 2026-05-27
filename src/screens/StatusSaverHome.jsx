@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -6,10 +6,12 @@ import {
   StyleSheet,
   ActivityIndicator,
   Platform,
+  Linking,
+  AppState,
 } from 'react-native';
 
 import RNFS from 'react-native-fs';
-import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 import Header from '../components/Header';
 import ImageGrid from '../components/ImageGrid';
@@ -34,6 +36,8 @@ export default function StatusSaverHome() {
   const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasPermission, setHasPermission] = useState(false);
+  const [hasRequestedManageStorage, setHasRequestedManageStorage] = useState(false);
+  const appState = React.useRef(AppState.currentState);
 
   /* ---------------- Permission ---------------- */
 
@@ -53,8 +57,30 @@ export default function StatusSaverHome() {
     console.log('[Permission] Request started');
 
     try {
+      // First, get standard media permissions (which we still need for WhatsApp Images if needed, but MANAGE_EXTERNAL handles all)
       const result = await request(getPermission());
-      console.log('[Permission] Result:', result);
+      console.log('[Permission] Media result:', result);
+
+      if (Platform.OS === 'android' && Platform.Version >= 30 && !hasRequestedManageStorage) {
+        console.log('[Permission] Android 11+ detected, requesting MANAGE_EXTERNAL_STORAGE');
+        setHasRequestedManageStorage(true);
+        // We prompt the user to grant all files access in settings
+        try {
+          await Linking.sendIntent('android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION', [
+            {
+              key: 'android.intent.extra.PACKAGE_NAME',
+              value: 'package:com.statusbag', // Make sure this matches your Android package name
+            },
+          ]);
+          setHasPermission(true);
+          return;
+        } catch (e) {
+          console.log('[Permission] Failed to open specific settings, trying generic...');
+          await Linking.sendIntent('android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION');
+          setHasPermission(true);
+          return;
+        }
+      }
 
       const granted = result === RESULTS.GRANTED;
       setHasPermission(granted);
@@ -65,6 +91,24 @@ export default function StatusSaverHome() {
       setHasPermission(false);
     }
   };
+
+  // Re-check files when returning from settings
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        console.log('[App] App has come to the foreground! Reloading statuses...');
+        loadStatuses();
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [activeTab]);
 
   /* ---------------- Find Status Folder ---------------- */
 
@@ -163,9 +207,9 @@ export default function StatusSaverHome() {
 
   return (
     <View style={styles.container}>
-      <Header 
-        title="StatusBag" 
-        rightIcon="workspace-premium" 
+      <Header
+        title="StatusBag"
+        rightIcon="workspace-premium"
       />
 
       {/* Tabs */}
@@ -209,7 +253,7 @@ export default function StatusSaverHome() {
       ) : statuses.length === 0 ? (
         <>
           {console.log('[UI] Empty state displayed')}
-          <EmptyState onOpenWhatsApp={() => {}} />
+          <EmptyState onOpenWhatsApp={() => { }} />
         </>
       ) : (
         <>
