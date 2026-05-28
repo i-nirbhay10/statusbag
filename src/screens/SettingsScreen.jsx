@@ -6,14 +6,70 @@ import {
   TouchableOpacity,
   Switch,
   ScrollView,
+  Share,
+  Linking,
+  Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import DeviceInfo from 'react-native-device-info';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Header from '../components/Header';
 import colors from '../theme/colors';
 
 export default function SettingsScreen({navigation}) {
-  const [autoSave, setAutoSave] = useState(true);
+  const [autoSave, setAutoSave] = useState(false);
   const [notifications, setNotifications] = useState(true);
+
+  React.useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const savedAutoSave = await AsyncStorage.getItem('autoSave');
+      const savedNotifs = await AsyncStorage.getItem('notifications');
+      if (savedAutoSave !== null) setAutoSave(savedAutoSave === 'true');
+      if (savedNotifs !== null) setNotifications(savedNotifs === 'true');
+    } catch (e) {
+      console.log('Failed to load settings', e);
+    }
+  };
+
+  const handleAutoSaveToggle = async (value) => {
+    setAutoSave(value);
+    await AsyncStorage.setItem('autoSave', value.toString());
+  };
+
+  const handleNotificationsToggle = async (value) => {
+    setNotifications(value);
+    await AsyncStorage.setItem('notifications', value.toString());
+  };
+
+  const handleShareApp = async () => {
+    try {
+      await Share.share({
+        message: 'Check out StatusBag - the best app to save WhatsApp Statuses! Download it now.',
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const handleRateUs = () => {
+    Linking.openURL('market://details?id=com.statusbag').catch(() => {
+      Alert.alert('Error', 'Unable to open app store.');
+    });
+  };
+
+  const handlePrivacyPolicy = () => {
+    Linking.openURL('https://statusbag.com/privacy').catch(() => {
+      Alert.alert('Error', 'Unable to open website.');
+    });
+  };
+
+  const handleStoragePath = () => {
+    Alert.alert('Storage Path', 'Your statuses are saved in the Pictures/StatusBag and Download/StatusBag folders on your internal storage.');
+  };
 
   return (
     <View style={styles.safe}>
@@ -59,7 +115,7 @@ export default function SettingsScreen({navigation}) {
           </View>
           <Switch
             value={autoSave}
-            onValueChange={setAutoSave}
+            onValueChange={handleAutoSaveToggle}
             trackColor={{false: colors.grayLight, true: colors.primary}}
             thumbColor={colors.white}
           />
@@ -76,7 +132,7 @@ export default function SettingsScreen({navigation}) {
           </View>
           <Switch
             value={notifications}
-            onValueChange={setNotifications}
+            onValueChange={handleNotificationsToggle}
             trackColor={{false: colors.grayLight, true: colors.primary}}
             thumbColor={colors.white}
           />
@@ -84,7 +140,7 @@ export default function SettingsScreen({navigation}) {
 
         <Divider />
 
-        <TouchableOpacity style={styles.row}>
+        <TouchableOpacity style={styles.row} onPress={handleStoragePath}>
           <View style={styles.rowLeft}>
             <View style={styles.iconBox}>
               <Icon name="folder-open" size={22} color={colors.grayDark} />
@@ -92,7 +148,7 @@ export default function SettingsScreen({navigation}) {
             <Text style={styles.rowTitle}>Storage Path</Text>
           </View>
           <View style={styles.rowRight}>
-            <Text style={styles.pathText}>/Internal/Status</Text>
+            <Text style={styles.pathText}>/StatusBag</Text>
             <Icon name="chevron-right" size={24} color={colors.grayMedium} />
           </View>
         </TouchableOpacity>
@@ -100,15 +156,15 @@ export default function SettingsScreen({navigation}) {
         {/* SUPPORT */}
         <Section title="Support" />
 
-        <SettingsLink icon="star" label="Rate Us" />
+        <SettingsLink icon="star" label="Rate Us" onPress={handleRateUs} />
         <Divider />
-        <SettingsLink icon="share" label="Share App" />
+        <SettingsLink icon="share" label="Share App" onPress={handleShareApp} />
         <Divider />
-        <SettingsLink icon="verified-user" label="Privacy Policy" />
+        <SettingsLink icon="verified-user" label="Privacy Policy" onPress={handlePrivacyPolicy} />
 
         {/* FOOTER */}
         <View style={styles.footer}>
-          <Text style={styles.version}>StatusBag v2.4.0</Text>
+          <Text style={styles.version}>StatusBag v{DeviceInfo.getVersion()}</Text>
           <Text style={styles.made}>Made with ❤️ for Indian Users</Text>
         </View>
       </ScrollView>
@@ -126,9 +182,9 @@ function Divider() {
   return <View style={styles.divider} />;
 }
 
-function SettingsLink({icon, label}) {
+function SettingsLink({icon, label, onPress}) {
   return (
-    <TouchableOpacity style={styles.row}>
+    <TouchableOpacity style={styles.row} onPress={onPress}>
       <View style={styles.rowLeft}>
         <View style={styles.iconBox}>
           <Icon name={icon} size={22} color={colors.grayDark} />

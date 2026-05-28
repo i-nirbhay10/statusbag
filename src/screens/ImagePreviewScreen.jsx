@@ -5,20 +5,70 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  ToastAndroid,
+  Alert,
+  Platform,
 } from 'react-native';
+import Video from 'react-native-video';
+import RNFS from 'react-native-fs';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import colors from '../theme/colors';
 
-export default function ImagePreviewScreen({navigation, route}) {
-  const {imageUri, uri} = route.params || {};
+export default function ImagePreviewScreen({ navigation, route }) {
+  const { imageUri, uri } = route.params || {};
   const insets = useSafeAreaInsets();
   const sourceUri = uri || imageUri;
+  const isVideoItem = sourceUri?.endsWith('.mp4');
+
+  const handleSave = async () => {
+    if (!sourceUri) return;
+    try {
+      const fileName = sourceUri.substring(sourceUri.lastIndexOf('/') + 1);
+
+      const destDir = isVideoItem ? RNFS.DownloadDirectoryPath : RNFS.PicturesDirectoryPath;
+      const folderPath = `${destDir}/StatusBag`;
+
+      const folderExists = await RNFS.exists(folderPath);
+      if (!folderExists) {
+        await RNFS.mkdir(folderPath);
+      }
+
+      const destPath = `${folderPath}/${fileName}`;
+
+      const fileExists = await RNFS.exists(destPath);
+      if (fileExists) {
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Already saved!', ToastAndroid.SHORT);
+        } else {
+          Alert.alert('Info', 'Already saved!');
+        }
+        return;
+      }
+
+      const rawSource = sourceUri.replace('file://', '');
+      await RNFS.copyFile(rawSource, destPath);
+      RNFS.scanFile(destPath).catch(() => { });
+
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Saved to StatusBag folder', ToastAndroid.SHORT);
+      } else {
+        Alert.alert('Success', 'Saved successfully!');
+      }
+    } catch (error) {
+      console.error('Save failed:', error);
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Failed to save', ToastAndroid.SHORT);
+      } else {
+        Alert.alert('Error', 'Failed to save file');
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, {paddingTop: insets.top}]}>
+      <View style={[styles.header, { paddingTop: insets.top > 0 ? insets.top + 16 : 16 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
           <Icon name="arrow-back-ios" size={24} color={colors.white} />
         </TouchableOpacity>
@@ -34,24 +84,34 @@ export default function ImagePreviewScreen({navigation, route}) {
         </View>
       </View>
 
-      {/* Image Preview */}
-      <View style={styles.imageWrapper}>
-        <Image
-          source={{uri: sourceUri}}
-          resizeMode="contain"
-          style={styles.image}
-        />
+      {/* Media Preview */}
+      <View style={styles.mediaWrapper}>
+        {isVideoItem ? (
+          <Video
+            source={{ uri: sourceUri }}
+            style={styles.media}
+            resizeMode="contain"
+            controls={true}
+            repeat={true}
+          />
+        ) : (
+          <Image
+            source={{ uri: sourceUri }}
+            resizeMode="contain"
+            style={styles.media}
+          />
+        )}
       </View>
 
       {/* Bottom Actions */}
-      <View style={[styles.bottomBar, {paddingBottom: insets.bottom > 0 ? insets.bottom : 16}]}>
-        <TouchableOpacity style={styles.actionButton}>
-          <Icon name="file-download" size={28} color={colors.primary} />
+      <View style={[styles.bottomBar, { paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 24 }]}>
+        <TouchableOpacity style={styles.actionButton} onPress={handleSave}>
+          <Icon name="file-download" size={24} color={colors.white} />
           <Text style={styles.actionText}>Save</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.actionButton}>
-          <Icon name="share" size={28} color={colors.primary} />
+          <Icon name="share" size={24} color={colors.white} />
           <Text style={styles.actionText}>Share</Text>
         </TouchableOpacity>
       </View>
@@ -83,27 +143,27 @@ const styles = StyleSheet.create({
 
   headerActions: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 24,
   },
 
   headerButton: {
     padding: 8,
   },
 
-  imageWrapper: {
+  mediaWrapper: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  image: {
+  media: {
     width: '100%',
     height: '100%',
   },
 
   bottomBar: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-evenly',
     paddingTop: 16,
     borderTopWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
@@ -116,12 +176,12 @@ const styles = StyleSheet.create({
 
   actionButton: {
     alignItems: 'center',
-    gap: 6,
   },
 
   actionText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.primary,
+    color: colors.white,
+    marginTop: 2,
   },
 });

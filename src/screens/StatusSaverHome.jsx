@@ -12,6 +12,7 @@ import {
 
 import RNFS from 'react-native-fs';
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Header from '../components/Header';
 import ImageGrid from '../components/ImageGrid';
@@ -35,8 +36,7 @@ export default function StatusSaverHome() {
   const [activeTab, setActiveTab] = useState('images');
   const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hasPermission, setHasPermission] = useState(false);
-  const [hasRequestedManageStorage, setHasRequestedManageStorage] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const appState = React.useRef(AppState.currentState);
 
   /* ---------------- Permission ---------------- */
@@ -61,34 +61,33 @@ export default function StatusSaverHome() {
       const result = await request(getPermission());
       console.log('[Permission] Media result:', result);
 
-      if (Platform.OS === 'android' && Platform.Version >= 30 && !hasRequestedManageStorage) {
-        console.log('[Permission] Android 11+ detected, requesting MANAGE_EXTERNAL_STORAGE');
-        setHasRequestedManageStorage(true);
-        // We prompt the user to grant all files access in settings
-        try {
-          await Linking.sendIntent('android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION', [
-            {
-              key: 'android.intent.extra.PACKAGE_NAME',
-              value: 'package:com.statusbag', // Make sure this matches your Android package name
-            },
-          ]);
-          setHasPermission(true);
-          return;
-        } catch (e) {
-          console.log('[Permission] Failed to open specific settings, trying generic...');
-          await Linking.sendIntent('android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION');
-          setHasPermission(true);
-          return;
+      if (Platform.OS === 'android' && Platform.Version >= 30) {
+        const hasPrompted = await AsyncStorage.getItem('hasPromptedManageStorage');
+        if (hasPrompted !== 'true') {
+          console.log('[Permission] Android 11+ detected, requesting MANAGE_EXTERNAL_STORAGE');
+          await AsyncStorage.setItem('hasPromptedManageStorage', 'true');
+          
+          // We prompt the user to grant all files access in settings
+          try {
+            await Linking.sendIntent('android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION', [
+              {
+                key: 'android.intent.extra.PACKAGE_NAME',
+                value: 'package:com.statusbag', // Make sure this matches your Android package name
+              },
+            ]);
+          } catch (e) {
+            console.log('[Permission] Failed to open specific settings, trying generic...');
+            await Linking.sendIntent('android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION');
+          }
+          return; // Let the AppState listener handle the reload when they return
         }
       }
 
-      const granted = result === RESULTS.GRANTED;
-      setHasPermission(granted);
-
-      console.log('[Permission] Granted:', granted);
+      console.log('[Permission] Request finished, loading statuses directly');
+      loadStatuses();
     } catch (error) {
       console.error('[Permission] Request failed:', error);
-      setHasPermission(false);
+      loadStatuses(); // Try loading anyway
     }
   };
 
@@ -100,7 +99,7 @@ export default function StatusSaverHome() {
         nextAppState === 'active'
       ) {
         console.log('[App] App has come to the foreground! Reloading statuses...');
-        loadStatuses();
+        loadStatuses(true);
       }
       appState.current = nextAppState;
     });
@@ -135,11 +134,15 @@ export default function StatusSaverHome() {
 
   /* ---------------- Load Statuses ---------------- */
 
-  const loadStatuses = async () => {
-    console.log('[Status] Load started');
+  const loadStatuses = async (isRefresh = false) => {
+    console.log('[Status] Load started. Refresh:', isRefresh);
     console.log('[Status] Active tab:', activeTab);
 
-    setLoading(true);
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
 
     try {
       const path = await findStatusPath();
@@ -182,6 +185,7 @@ export default function StatusSaverHome() {
       setStatuses([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
       console.log('[Status] Load finished');
     }
   };
@@ -193,22 +197,13 @@ export default function StatusSaverHome() {
     requestPermission();
   }, [activeTab]);
 
-  useEffect(() => {
-    console.log('[Effect] Permission state:', hasPermission);
-
-    if (hasPermission) {
-      loadStatuses();
-    } else {
-      console.warn('[Effect] Permission denied — skipping load');
-    }
-  }, [hasPermission, activeTab]);
-
   /* ---------------- UI ---------------- */
 
   return (
     <View style={styles.container}>
       <Header
         title="StatusBag"
+        leftIcon={null}
         rightIcon="workspace-premium"
       />
 
@@ -248,7 +243,7 @@ export default function StatusSaverHome() {
       {/* Content */}
       {loading ? (
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color="#13ec5b" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : statuses.length === 0 ? (
         <>
@@ -258,7 +253,12 @@ export default function StatusSaverHome() {
       ) : (
         <>
           {console.log('[UI] Rendering grid with items:', statuses.length)}
-          <ImageGrid data={statuses} isVideo={activeTab === 'videos'} />
+          <ImageGrid 
+            data={statuses} 
+            isVideo={activeTab === 'videos'} 
+            refreshing={refreshing}
+            onRefresh={() => loadStatuses(true)}
+          />
         </>
       )}
     </View>
@@ -304,68 +304,3 @@ const styles = StyleSheet.create({
   },
 });
 
-// // import React from 'react';
-// // import {
-// //   SafeAreaView,
-// //   View,
-// //   TouchableOpacity,
-// //   Text,
-// //   StyleSheet,
-// // } from 'react-native';
-// // import TopBar from '../components/TopBar';
-// // import ImageGrid from '../components/ImageGrid';
-// // import {
-// //   responsiveHeight as hp,
-// //   responsiveFontSize as rf,
-// // } from 'react-native-responsive-dimensions';
-
-// // export default function StatusSaverHome() {
-// //   return (
-// //     <SafeAreaView style={styles.container}>
-// //       <TopBar />
-
-// //       {/* Tab Selector */}
-// //       <View style={styles.tabContainer}>
-// //         <TouchableOpacity style={[styles.tab, styles.activeTab]}>
-// //           <Text style={[styles.tabText, styles.activeTabText]}>Images</Text>
-// //         </TouchableOpacity>
-// //         <TouchableOpacity style={styles.tab}>
-// //           <Text style={styles.tabText}>Videos</Text>
-// //         </TouchableOpacity>
-// //       </View>
-
-// //       {/* Image Grid */}
-// //       <ImageGrid />
-// //     </SafeAreaView>
-// //   );
-// // }
-
-// // const styles = StyleSheet.create({
-// //   container: {
-// //     flex: 1,
-// //     backgroundColor: '#f6f8f6',
-// //   },
-// //   tabContainer: {
-// //     flexDirection: 'row',
-// //     borderBottomWidth: 1,
-// //     borderBottomColor: '#e5e7eb',
-// //   },
-// //   tab: {
-// //     flex: 1,
-// //     alignItems: 'center',
-// //     paddingVertical: hp(2),
-// //     borderBottomWidth: 2,
-// //     borderBottomColor: 'transparent',
-// //   },
-// //   activeTab: {
-// //     borderBottomColor: '#13ec5b',
-// //   },
-// //   tabText: {
-// //     fontSize: rf(1.8),
-// //     fontWeight: 'bold',
-// //     color: '#9ca3af',
-// //   },
-// //   activeTabText: {
-// //     color: '#13ec5b',
-// //   },
-// // });

@@ -2,6 +2,7 @@ import React from 'react';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import BottomTabNavigator from './BottomTabNavigator';
 // import SettingsScreen from '../screens/SettingsScreen';
+import colors from '../theme/colors';
 
 const Drawer = createDrawerNavigator();
 
@@ -10,7 +11,7 @@ export default function DrawerNavigator() {
     <Drawer.Navigator
       screenOptions={{
         headerShown: false,
-        drawerActiveTintColor: '#13ec5b',
+        drawerActiveTintColor: colors.primary,
         drawerInactiveTintColor: '#9ca3af',
       }}>
       <Drawer.Screen

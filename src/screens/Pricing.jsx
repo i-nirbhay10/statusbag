@@ -1,7 +1,6 @@
 // App.js
 import React from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   ScrollView,
@@ -9,16 +8,21 @@ import {
   StyleSheet,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import colors from '../theme/colors';
 
 export default function Pricing() {
+  const navigation = useNavigation();
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="close" size={28} color="#111813" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Go Pro</Text>
@@ -34,7 +38,7 @@ export default function Pricing() {
         {/* Hero Section */}
         <View style={styles.hero}>
           <View style={styles.heroIconWrapper}>
-            <Icon name="stars" size={48} color="#13ec5b" />
+            <Icon name="stars" size={48} color={colors.primary} />
           </View>
           <Text style={styles.heroTitle}>Unlock the Full Experience</Text>
           <Text style={styles.heroSubtitle}>
@@ -63,13 +67,13 @@ export default function Pricing() {
           ].map((f, index) => (
             <View key={index} style={styles.featureCard}>
               <View style={styles.featureIcon}>
-                <Icon name={f.icon} size={24} color="#13ec5b" />
+                <Icon name={f.icon} size={24} color={colors.primary} />
               </View>
               <View style={{flex: 1}}>
                 <Text style={styles.featureTitle}>{f.title}</Text>
                 <Text style={styles.featureDesc}>{f.desc}</Text>
               </View>
-              <Icon name="check-circle" size={24} color="#13ec5b" />
+              <Icon name="check-circle" size={24} color={colors.primary} />
             </View>
           ))}
         </View>
@@ -89,11 +93,11 @@ export default function Pricing() {
               </View>
               <View style={styles.planFeatures}>
                 <View style={styles.planFeature}>
-                  <Icon name="check" size={18} color="#13ec5b" />
+                  <Icon name="check" size={18} color={colors.primary} />
                   <Text style={styles.planFeatureText}>Standard Features</Text>
                 </View>
                 <View style={styles.planFeature}>
-                  <Icon name="check" size={18} color="#13ec5b" />
+                  <Icon name="check" size={18} color={colors.primary} />
                   <Text style={styles.planFeatureText}>Ads Disabled</Text>
                 </View>
               </View>
@@ -112,17 +116,17 @@ export default function Pricing() {
               </View>
               <View style={styles.planFeatures}>
                 <View style={styles.planFeature}>
-                  <Icon name="check" size={18} color="#13ec5b" />
+                  <Icon name="check" size={18} color={colors.primary} />
                   <Text style={styles.planFeatureText}>Full Pro Suite</Text>
                 </View>
                 <View style={styles.planFeature}>
-                  <Icon name="check" size={18} color="#13ec5b" />
+                  <Icon name="check" size={18} color={colors.primary} />
                   <Text style={styles.planFeatureText}>
                     Priority Status Support
                   </Text>
                 </View>
                 <View style={styles.planFeatureSave}>
-                  <Icon name="savings" size={18} color="#13ec5b" />
+                  <Icon name="savings" size={18} color={colors.primary} />
                   <Text style={styles.planSaveText}>Save 58% Yearly</Text>
                 </View>
               </View>
@@ -133,7 +137,7 @@ export default function Pricing() {
         {/* CTA */}
         <View style={styles.ctaSection}>
           <LinearGradient
-            colors={['#D4AF37', '#13ec5b']}
+            colors={['#D4AF37', colors.primary]}
             start={{x: 0, y: 0}}
             end={{x: 1, y: 1}}
             style={styles.ctaButton}>
@@ -180,7 +184,7 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   heroIconWrapper: {
-    backgroundColor: '#13ec5b1A',
+    backgroundColor: colors.primaryLight,
     padding: 16,
     borderRadius: 50,
     marginBottom: 12,
@@ -213,7 +217,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#13ec5b1A',
+    backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -250,8 +254,8 @@ const styles = StyleSheet.create({
   },
   bestPlan: {
     borderWidth: 2,
-    borderColor: '#13ec5b',
-    shadowColor: '#13ec5b',
+    borderColor: colors.primary,
+    shadowColor: colors.primary,
     shadowOpacity: 0.1,
     shadowOffset: {width: 0, height: 4},
     shadowRadius: 6,
@@ -260,7 +264,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: 12,
-    backgroundColor: '#13ec5b',
+    backgroundColor: colors.primary,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 50,
@@ -268,7 +272,7 @@ const styles = StyleSheet.create({
   bestBadgeText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#111813',
+    color: colors.white,
   },
   planHeader: {
     marginBottom: 12,
@@ -288,7 +292,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#13ec5b',
+    color: colors.primary,
   },
   ctaSection: {paddingHorizontal: 16, paddingTop: 24},
   ctaButton: {

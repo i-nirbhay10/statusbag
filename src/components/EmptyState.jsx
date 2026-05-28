@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import colors from '../theme/colors';
 
 export default function EmptyState({onOpenWhatsApp}) {
   return (
@@ -31,7 +32,7 @@ export default function EmptyState({onOpenWhatsApp}) {
         style={styles.button}
         activeOpacity={0.85}
         onPress={onOpenWhatsApp}>
-        <Icon name="chat" size={22} color="#102216" />
+        <Icon name="chat" size={22} color={colors.white} />
         <Text style={styles.buttonText}>Open WhatsApp</Text>
       </TouchableOpacity>
     </View>
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: 'rgba(19,236,91,0.15)',
+    backgroundColor: colors.primaryLight,
   },
 
   illustration: {
@@ -98,9 +99,9 @@ const styles = StyleSheet.create({
     height: 56,
     width: '100%',
     borderRadius: 14,
-    backgroundColor: '#13ec5b',
+    backgroundColor: colors.primary,
     gap: 10,
-    shadowColor: '#13ec5b',
+    shadowColor: colors.primary,
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 4,
@@ -109,6 +110,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#102216',
+    color: colors.white,
   },
 });

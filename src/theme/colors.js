@@ -1,14 +1,14 @@
 export default {
-  primary: '#25D366',
-  primaryLight: '#DCF8C6',
-  primaryDark: '#075E54',
-  secondary: '#128C7E',
-  backgroundLight: '#F0F2F5',
-  backgroundDark: '#111B21',
-  textLight: '#111B21',
-  textDark: '#FFFFFF',
+  primary: '#1A365D', // Navy Blue
+  primaryLight: '#EBF8FF', // Light blue tint for backgrounds
+  primaryDark: '#0C1A30', // Deep Navy
+  secondary: '#2B6CB0', // Royal/Medium Blue for accents
+  backgroundLight: '#F7FAFC', // Cool off-white
+  backgroundDark: '#0F172A', // Slate dark
+  textLight: '#1A202C', // Dark slate for text
+  textDark: '#FFFFFF', // White text
   white: '#ffffff',
-  grayLight: '#E9EDEF',
-  grayMedium: '#8696A0',
-  grayDark: '#667781',
+  grayLight: '#E2E8F0', // Cool gray light
+  grayMedium: '#A0AEC0', // Cool gray medium
+  grayDark: '#4A5568', // Cool gray dark
 };

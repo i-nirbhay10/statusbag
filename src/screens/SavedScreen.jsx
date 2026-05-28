@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -7,68 +7,133 @@ import {
   ImageBackground,
   StyleSheet,
   Dimensions,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {useNavigation, useIsFocused} from '@react-navigation/native';
+import RNFS from 'react-native-fs';
 import Header from '../components/Header';
 import colors from '../theme/colors';
 
 const {width} = Dimensions.get('window');
 const GRID_ITEM_SIZE = (width - 48) / 2; // 16px padding on both sides + 8px gap
 
-const mediaData = [
-  {
-    id: '1',
-    type: 'image',
-    uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC3GuX29ogehkkzmTwTBwXGqwZf22857H8YjCSqtLoFJIPm2YZpNXQdr78FdH-zsphXMs9zMBQ9tiVCuktsTu5-_vDT7dXA_Adpcp_kkwgOptVysAIqD9a1AhiN7x7GGoyY1SLiPUepJ3iE7mfvPLipeYn2BlbmA-ShQpnGPDDLkm78RihPDuh2o7azrh2HHNAtwjjeMEZs1A',
-  },
-  {
-    id: '2',
-    type: 'image',
-    uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKLGqHWDAsj67kkWwHg4-VyIptp1LFaXKpYz0ImYMElAroqdD-nvk9aH0Fo6WYVYVuM28tZ7CpFNEH6l1pqyaNFpNweNFdrlSFESfDMXOA2fMMF0YuUMtGN_8B5gQugBaOARTePbgXyml_alfNqQHWo7_hovB42-iPmeDdGtB2kI9UkFD-oPq6wthqcLPrVbZ-2En7HVcfaTf7uEIC4A3R1CN3K3-I_ILUHWH2-qYaj9T1OXDFqYKKcl1ZtlMDmmz21HWQddSNP24',
-  },
-  {
-    id: '3',
-    type: 'image',
-    uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBmCHSFDZSo17F6cqfkIy2BsD4dVy8-nPnJIXj8FSKV9mTUGKW4PxG_cJMg921bi2SigNZi3YPhzDsRAf0WAkLPN218g6uwfGCPSPojP_8d1K9MyFMswIiZ7LBhwHtn6hgrqLm5oBTln34uiVDjS0mgqzxEprqIRjm-vgD2EWbbtOd_5Jvv4kScWP-OCBx_ypitIkopJ7crq8q1dVIX_bRRQGl4Q24ZtbidZ-r8t_JXKkCTuomlqs7VGfjlC-Z565ZTugg4YoBWvmY',
-  },
-  {
-    id: '4',
-    type: 'image',
-    uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBL3q_CcLKRbe0KYiCRJB6AL6D-PyFPTgWEfqqGtF4EtNshlfEDgyNW3Rgvv83nUe_yDleivZMIgCKqQ5QafqLcOgqH4biCgX2a9nORnhpJh7ykE3Ov7on5CyC24nrTIupUPm3HLItjtoZVyEQ1_fEWDmIqo0OxrKAiFQwkGQs-9QS9H53YK-XT62gEwBayQDaDsogj9uiDpCu5o58DMzufJBnjbT3gqeaosvjIECxxh53tTo5kmFnwC7b93e7zMsaFPftWHUUW1m8',
-  },
-];
-
 export default function SavedScreen() {
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const [filter, setFilter] = useState('Images');
+  const [savedMedia, setSavedMedia] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const filteredData = mediaData.filter(item =>
+  const fetchSavedMedia = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    let allMedia = [];
+    try {
+      const picPath = `${RNFS.PicturesDirectoryPath}/StatusBag`;
+      const picExists = await RNFS.exists(picPath);
+      if (picExists) {
+        const picFiles = await RNFS.readDir(picPath);
+        picFiles.forEach(f => {
+          if (/\.(jpg|jpeg|png)$/i.test(f.name)) {
+            allMedia.push({ id: f.path, type: 'image', uri: 'file://' + f.path, path: f.path });
+          }
+        });
+      }
+
+      const vidPath = `${RNFS.DownloadDirectoryPath}/StatusBag`;
+      const vidExists = await RNFS.exists(vidPath);
+      if (vidExists) {
+        const vidFiles = await RNFS.readDir(vidPath);
+        vidFiles.forEach(f => {
+          if (/\.(mp4)$/i.test(f.name)) {
+            allMedia.push({ id: f.path, type: 'video', uri: 'file://' + f.path, path: f.path });
+          }
+        });
+      }
+      
+      setSavedMedia(allMedia.reverse()); // latest roughly first
+    } catch (e) {
+      console.log('Error fetching saved media:', e);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchSavedMedia();
+    }
+  }, [isFocused]);
+
+  const handleDelete = (path) => {
+    Alert.alert('Delete', 'Are you sure you want to delete this file?', [
+      { text: 'Cancel', style: 'cancel' },
+      { 
+        text: 'Delete', 
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await RNFS.unlink(path);
+            fetchSavedMedia();
+          } catch (e) {
+            console.log('Failed to delete:', e);
+          }
+        }
+      }
+    ]);
+  };
+
+  const filteredData = savedMedia.filter(item =>
     filter === 'Images' ? item.type === 'image' : item.type === 'video',
   );
 
   const renderItem = ({item}) => (
     <View style={styles.gridItem}>
-      <ImageBackground
-        source={{uri: item.uri}}
-        style={styles.image}
-        imageStyle={{borderRadius: 16}}>
-        <View style={styles.overlay} />
-        <View style={styles.gridButtons}>
-          <TouchableOpacity
-            style={[
-              styles.iconButton,
-              {backgroundColor: 'rgba(255,255,255,0.2)'},
-            ]}>
-            <MaterialIcons name="share" size={20} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.iconButton,
-              {backgroundColor: 'rgba(255,255,255,0.2)'},
-            ]}>
-            <MaterialIcons name="delete" size={20} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+      <TouchableOpacity 
+        style={StyleSheet.absoluteFill} 
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate('ImagePreview', { uri: item.uri })}
+      >
+        <ImageBackground
+          source={{uri: item.uri}}
+          style={styles.image}
+          imageStyle={{borderRadius: 16}}>
+          
+          {item.type === 'video' && (
+            <View style={styles.playIconContainer}>
+              <MaterialIcons name="play-circle-outline" size={32} color="rgba(255,255,255,0.8)" />
+            </View>
+          )}
+
+          <View style={styles.overlay} />
+        </ImageBackground>
+      </TouchableOpacity>
+      
+      <View style={styles.gridButtons}>
+        <TouchableOpacity
+          style={[
+            styles.iconButton,
+            {backgroundColor: 'rgba(255,255,255,0.2)'},
+          ]}>
+          <MaterialIcons name="share" size={20} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => handleDelete(item.path)}
+          style={[
+            styles.iconButton,
+            {backgroundColor: 'rgba(255,255,255,0.2)'},
+          ]}>
+          <MaterialIcons name="delete" size={20} color="#ff5a5a" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -78,7 +143,7 @@ export default function SavedScreen() {
       <Header 
         title="Your Downloads"
         leftIcon="arrow-back-ios"
-        onLeftPress={() => {}} // Navigation can be injected
+        onLeftPress={() => navigation.goBack()} 
         rightCustomComponent={
           <TouchableOpacity style={styles.selectButton}>
             <Text style={styles.selectButtonText}>Select</Text>
@@ -108,14 +173,32 @@ export default function SavedScreen() {
       </View>
 
       {/* Media Grid */}
-      <FlatList
-        data={filteredData}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        columnWrapperStyle={{justifyContent: 'space-between', marginBottom: 12}}
-        contentContainerStyle={{paddingHorizontal: 16, paddingBottom: 120}}
-      />
+      {loading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : filteredData.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <MaterialIcons name="folder-open" size={48} color={colors.grayMedium} />
+          <Text style={styles.emptyText}>No saved {filter.toLowerCase()} found</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredData}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={{justifyContent: 'space-between', marginBottom: 12}}
+          contentContainerStyle={{paddingHorizontal: 16, paddingBottom: 120, paddingTop: 8}}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => fetchSavedMedia(true)}
+              colors={[colors.primary]}
+            />
+          }
+        />
+      )}
     </View>
   );
 }
@@ -172,4 +255,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  playIconContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: colors.grayMedium,
+    fontWeight: '500',
+  }
 });

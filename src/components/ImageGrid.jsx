@@ -5,7 +5,12 @@ import {
   ImageBackground,
   TouchableOpacity,
   StyleSheet,
+  ToastAndroid,
+  Alert,
+  Platform,
+  RefreshControl,
 } from 'react-native';
+import RNFS from 'react-native-fs';
 
 import {
   responsiveHeight as hp,
@@ -14,12 +19,12 @@ import {
 } from 'react-native-responsive-dimensions';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import colors from '../theme/colors';
 
 /* ---------------- Component ---------------- */
 
-export default function ImageGrid({data = [], isVideo = false}) {
+export default function ImageGrid({ data = [], isVideo = false, refreshing = false, onRefresh }) {
   const navigation = useNavigation();
 
   const onItemPress = item => {
@@ -31,35 +36,81 @@ export default function ImageGrid({data = [], isVideo = false}) {
     });
   };
 
-  const onDownloadPress = item => {
+  const onDownloadPress = async item => {
     console.log('[Grid] Download pressed:', item.path || item);
-    // TODO: implement save logic
+    try {
+      const sourceUri = item.path || item;
+      const isVideoItem = sourceUri.endsWith('.mp4');
+      const fileName = sourceUri.substring(sourceUri.lastIndexOf('/') + 1);
+
+      const destDir = isVideoItem ? RNFS.DownloadDirectoryPath : RNFS.PicturesDirectoryPath;
+      const folderPath = `${destDir}/StatusBag`;
+
+      const folderExists = await RNFS.exists(folderPath);
+      if (!folderExists) {
+        await RNFS.mkdir(folderPath);
+      }
+
+      const destPath = `${folderPath}/${fileName}`;
+
+      const fileExists = await RNFS.exists(destPath);
+      if (fileExists) {
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Already saved!', ToastAndroid.SHORT);
+        } else {
+          Alert.alert('Info', 'Already saved!');
+        }
+        return;
+      }
+
+      const rawSource = sourceUri.replace('file://', '');
+      await RNFS.copyFile(rawSource, destPath);
+
+      // Notify media scanner so it appears in the gallery
+      RNFS.scanFile(destPath).catch(err => console.log('Scan failed:', err));
+
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Saved to StatusBag folder', ToastAndroid.SHORT);
+      } else {
+        Alert.alert('Success', 'Saved successfully!');
+      }
+    } catch (error) {
+      console.error('Save failed:', error);
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Failed to save', ToastAndroid.SHORT);
+      } else {
+        Alert.alert('Error', 'Failed to save file');
+      }
+    }
   };
 
-  const renderItem = ({item, index}) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.85}
-      onPress={() => onItemPress(item)}>
-      <ImageBackground
-        source={{uri: item.path || item}}
-        style={styles.image}
-        resizeMode="cover">
-        
-        {isVideo && (
-          <View style={styles.playIconContainer}>
-            <MaterialIcons name="play-circle-outline" size={rf(4)} color="rgba(255,255,255,0.8)" />
-          </View>
-        )}
+  const renderItem = ({ item, index }) => (
+    <View style={styles.card}>
+      <TouchableOpacity
+        style={StyleSheet.absoluteFill}
+        activeOpacity={0.85}
+        onPress={() => onItemPress(item)}>
+        <ImageBackground
+          source={{ uri: item.path || item }}
+          style={styles.image}
+          resizeMode="cover">
 
-        <TouchableOpacity
-          style={styles.downloadButton}
-          onPress={() => onDownloadPress(item)}
-          activeOpacity={0.8}>
-          <MaterialIcons name="file-download" size={rf(2.4)} color={colors.white} />
-        </TouchableOpacity>
-      </ImageBackground>
-    </TouchableOpacity>
+          {isVideo && (
+            <View style={styles.playIconContainer}>
+              <MaterialIcons name="play-circle-outline" size={rf(4)} color="rgba(255,255,255,0.8)" />
+            </View>
+          )}
+        </ImageBackground>
+      </TouchableOpacity>
+
+      {/* Download Button moved outside to prevent nested touch issues on Android */}
+      <TouchableOpacity
+        style={styles.downloadButton}
+        onPress={() => onDownloadPress(item)}
+        activeOpacity={0.8}>
+        <MaterialIcons name="file-download" size={rf(2)} color={colors.white} />
+      </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -70,6 +121,15 @@ export default function ImageGrid({data = [], isVideo = false}) {
       renderItem={renderItem}
       contentContainerStyle={styles.list}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+          />
+        ) : undefined
+      }
     />
   );
 }
@@ -108,8 +168,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: hp(1),
     right: wp(1.5),
-    height: hp(4.5),
-    width: hp(4.5),
+    height: hp(3.5),
+    width: hp(3.5),
     borderRadius: hp(2.25),
     backgroundColor: colors.primary,
     justifyContent: 'center',
@@ -121,173 +181,3 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
 });
-
-// import React from 'react';
-// import {
-//   View,
-//   ScrollView,
-//   ImageBackground,
-//   TouchableOpacity,
-//   StyleSheet,
-// } from 'react-native';
-// import {
-//   responsiveHeight as hp,
-//   responsiveWidth as wp,
-//   responsiveFontSize as rf,
-// } from 'react-native-responsive-dimensions';
-// import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-// import {useNavigation} from '@react-navigation/native';
-
-// const images = [
-//   'https://www.devoutgrowth.com/admin/team_uploads/1763707290_6920099a27a61_WhatsApp%20Image%202025-11-21%20at%2012.08.10%20PM.jpeg',
-//   'https://lh3.googleusercontent.com/aida-public/AB6AXuApE35r7cF7Y8Gb3I-CbISHb5C7u5lXgab9MgD7RAU_5s-5xSTWUsHnhMB8Mbd81OAfjcOhrkXcx9ENFk13kbRrkJ79WgU_P3XN6rla4cfB56TV2bY4hbRY6v_6lKASwxx5bFIdOSVWQdrDUdI0DwH7mJg4o6GGRIvUwgYWGx3V-0H9PWt3w2SIMPvcOfqWoIq8t_xi_Lp4Lg76woBpa0Nhsw5K2MH6vR3xTf8EMBlxh6y4SPnG2_3IZBr18LZAMLDuxvnZ1VibV9s',
-// ];
-
-// export default function ImageGrid() {
-//   const navigation = useNavigation();
-
-//   return (
-//     <ScrollView contentContainerStyle={styles.scrollContainer}>
-//       <View style={styles.grid}>
-//         {images.map((img, idx) => (
-//           <TouchableOpacity
-//             key={idx}
-//             style={styles.card}
-//             activeOpacity={0.8}
-//             onPress={() =>
-//               navigation.navigate('ImagePreview', {
-//                 imageUri: img,
-//               })
-//             }>
-//             <ImageBackground
-//               source={{uri: img}}
-//               style={styles.image}
-//               resizeMode="cover">
-//               <TouchableOpacity style={styles.downloadButton}>
-//                 <MaterialIcons name="download" size={rf(2)} color="#fff" />
-//               </TouchableOpacity>
-//             </ImageBackground>
-//           </TouchableOpacity>
-//         ))}
-//       </View>
-//     </ScrollView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   scrollContainer: {
-//     padding: wp(1),
-//   },
-//   grid: {
-//     flexDirection: 'row',
-//     flexWrap: 'wrap',
-//     justifyContent: 'space-between',
-//   },
-//   card: {
-//     width: wp(30),
-//     aspectRatio: 4 / 5,
-//     marginBottom: wp(1),
-//     borderRadius: wp(2),
-//     overflow: 'hidden',
-//     backgroundColor: '#e5e7eb',
-//   },
-//   image: {
-//     flex: 1,
-//   },
-//   downloadButton: {
-//     position: 'absolute',
-//     bottom: hp(1),
-//     right: wp(1),
-//     height: hp(4),
-//     width: hp(4),
-//     borderRadius: hp(2),
-//     backgroundColor: '#13ec5b',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-// });
-
-// // import React from 'react';
-// // import {
-// //   View,
-// //   ScrollView,
-// //   ImageBackground,
-// //   TouchableOpacity,
-// //   StyleSheet,
-// // } from 'react-native';
-// // import {
-// //   responsiveHeight as hp,
-// //   responsiveWidth as wp,
-// //   responsiveFontSize as rf,
-// // } from 'react-native-responsive-dimensions';
-// // import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-// // import {useNavigation} from '@react-navigation/native';
-
-// // const images = [
-// //   'https://www.devoutgrowth.com/admin/team_uploads/1763707290_6920099a27a61_WhatsApp%20Image%202025-11-21%20at%2012.08.10%20PM.jpeg',
-// //   'https://lh3.googleusercontent.com/aida-public/AB6AXuApE35r7cF7Y8Gb3I-CbISHb5C7u5lXgab9MgD7RAU_5s-5xSTWUsHnhMB8Mbd81OAfjcOhrkXcx9ENFk13kbRrkJ79WgU_P3XN6rla4cfB56TV2bY4hbRY6v_6lKASwxx5bFIdOSVWQdrDUdI0DwH7mJg4o6GGRIvUwgYWGx3V-0H9PWt3w2SIMPvcOfqWoIq8t_xi_Lp4Lg76woBpa0Nhsw5K2MH6vR3xTf8EMBlxh6y4SPnG2_3IZBr18LZAMLDuxvnZ1VibV9s',
-// // ];
-
-// // export default function ImageGrid() {
-// //   const navigation = useNavigation();
-
-// //   return (
-// //     <ScrollView contentContainerStyle={styles.scrollContainer}>
-// //       <View style={styles.grid}>
-// //         {images.map((img, idx) => (
-// //           <TouchableOpacity
-// //             key={idx}
-// //             style={styles.card}
-// //             activeOpacity={0.8}
-// //             onPress={() =>
-// //               navigation.navigate('ImagePreview', {
-// //                 imageUri: img,
-// //               })
-// //             }>
-// //             <ImageBackground
-// //               source={{uri: img}}
-// //               style={styles.image}
-// //               resizeMode="cover">
-// //               <TouchableOpacity style={styles.downloadButton}>
-// //                 <MaterialIcons name="download" size={rf(2)} color="#fff" />
-// //               </TouchableOpacity>
-// //             </ImageBackground>
-// //           </TouchableOpacity>
-// //         ))}
-// //       </View>
-// //     </ScrollView>
-// //   );
-// // }
-
-// // const styles = StyleSheet.create({
-// //   scrollContainer: {
-// //     padding: wp(1),
-// //   },
-// //   grid: {
-// //     flexDirection: 'row',
-// //     flexWrap: 'wrap',
-// //     justifyContent: 'space-between',
-// //   },
-// //   card: {
-// //     width: wp(30),
-// //     aspectRatio: 4 / 5,
-// //     marginBottom: wp(1),
-// //     borderRadius: wp(2),
-// //     overflow: 'hidden',
-// //     backgroundColor: '#e5e7eb',
-// //   },
-// //   image: {
-// //     flex: 1,
-// //   },
-// //   downloadButton: {
-// //     position: 'absolute',
-// //     bottom: hp(1),
-// //     right: wp(1),
-// //     height: hp(4),
-// //     width: hp(4),
-// //     borderRadius: hp(2),
-// //     backgroundColor: '#13ec5b',
-// //     justifyContent: 'center',
-// //     alignItems: 'center',
-// //   },
-// // });
