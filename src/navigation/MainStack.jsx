@@ -4,6 +4,8 @@ import BottomTabNavigator from './BottomTabNavigator';
 import ImagePreviewScreen from '../screens/ImagePreviewScreen';
 import Pricing from '../screens/Pricing';
 import SplashScreen from '../screens/SplashScreen';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
+import TermsOfServiceScreen from '../screens/TermsOfServiceScreen';
 
 const Stack = createStackNavigator();
 
@@ -14,6 +16,8 @@ export default function MainStack() {
       <Stack.Screen name="RootDrawer" component={BottomTabNavigator} />
       <Stack.Screen name="ImagePreview" component={ImagePreviewScreen} />
       <Stack.Screen name="Pricing" component={Pricing} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+      <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} />
     </Stack.Navigator>
   );
 }

@@ -2,7 +2,7 @@ export default {
   primary: '#1A365D', // Navy Blue
   primaryLight: '#EBF8FF', // Light blue tint for backgrounds
   primaryDark: '#0C1A30', // Deep Navy
-  secondary: '#2B6CB0', // Royal/Medium Blue for accents
+  secondary: '#224c79ff', // Royal/Medium Blue for accents
   backgroundLight: '#F7FAFC', // Cool off-white
   backgroundDark: '#0F172A', // Slate dark
   textLight: '#1A202C', // Dark slate for text

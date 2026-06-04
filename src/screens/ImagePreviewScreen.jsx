@@ -8,6 +8,7 @@ import {
   ToastAndroid,
   Alert,
   Platform,
+  Share,
 } from 'react-native';
 import Video from 'react-native-video';
 import RNFS from 'react-native-fs';
@@ -65,6 +66,51 @@ export default function ImagePreviewScreen({ navigation, route }) {
     }
   };
 
+  const handleShare = async () => {
+    if (!sourceUri) return;
+    try {
+      await Share.share({
+        url: sourceUri,
+        message: 'Check out this status from StatusBag!',
+      });
+    } catch (error) {
+      console.error('Share error:', error);
+      Alert.alert('Error', 'Could not share file');
+    }
+  };
+
+  const handleDelete = () => {
+    if (!sourceUri) return;
+    Alert.alert(
+      'Delete Status',
+      'Are you sure you want to delete this file?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const fileExists = await RNFS.exists(sourceUri.replace('file://', ''));
+              if (fileExists) {
+                await RNFS.unlink(sourceUri.replace('file://', ''));
+                if (Platform.OS === 'android') {
+                  ToastAndroid.show('Deleted successfully', ToastAndroid.SHORT);
+                }
+                navigation.goBack();
+              } else {
+                Alert.alert('Error', 'File not found');
+              }
+            } catch (error) {
+              console.error('Delete error:', error);
+              Alert.alert('Error', 'Failed to delete file');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -74,11 +120,9 @@ export default function ImagePreviewScreen({ navigation, route }) {
         </TouchableOpacity>
 
         <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.headerButton}>
-            <Icon name="share" size={24} color={colors.white} />
-          </TouchableOpacity>
 
-          <TouchableOpacity style={styles.headerButton}>
+
+          <TouchableOpacity style={styles.headerButton} onPress={handleDelete}>
             <Icon name="delete" size={24} color="#ff5a5a" />
           </TouchableOpacity>
         </View>
@@ -110,7 +154,7 @@ export default function ImagePreviewScreen({ navigation, route }) {
           <Text style={styles.actionText}>Save</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
           <Icon name="share" size={24} color={colors.white} />
           <Text style={styles.actionText}>Share</Text>
         </TouchableOpacity>

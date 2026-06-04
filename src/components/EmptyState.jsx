@@ -10,9 +10,7 @@ export default function EmptyState({onOpenWhatsApp}) {
       <View style={styles.illustrationWrapper}>
         <View style={styles.glow} />
         <Image
-          source={{
-            uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAvsy2GguD2JqEfhm5b9gYY50--KFZZ94q3rMni2M_mErwfAqMiYPaHvXUERkTuullP_No-1vmkMy2f5fW67cLAEeC5hq3Vh3ylzDxH-2AEjj8RKtiW4QH0IrjOyf61XY9fuJ8-0NCxgiYVsnmqYGyTo-oBfG3rbwBHQpb3wXKCDDXFuEJURnlfM2fy1b3mOydUesC_jMw8KwS06pIhxdTEKfNDMjwHn-MZgs1KjC0qfhYInH_8_U3_wn9DsAeVGbImDRivyvN2sW4',
-          }}
+          source={require('../assets/statusbagLogo.png')}
           style={styles.illustration}
           resizeMode="contain"
         />

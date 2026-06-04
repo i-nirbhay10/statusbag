@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,10 @@ import DeviceInfo from 'react-native-device-info';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Header from '../components/Header';
 import colors from '../theme/colors';
+import { useAppUpdate } from '../hooks/useAppUpdate';
 
-export default function SettingsScreen({navigation}) {
+export default function SettingsScreen({ navigation }) {
+  const { checkForUpdates } = useAppUpdate();
   const [autoSave, setAutoSave] = useState(false);
   const [notifications, setNotifications] = useState(true);
 
@@ -62,10 +64,19 @@ export default function SettingsScreen({navigation}) {
   };
 
   const handlePrivacyPolicy = () => {
-    Linking.openURL('https://statusbag.com/privacy').catch(() => {
-      Alert.alert('Error', 'Unable to open website.');
+    navigation.navigate('PrivacyPolicy');
+  };
+
+  const handleTermsOfService = () => {
+    navigation.navigate('TermsOfService');
+  };
+
+  const handleContactSupport = () => {
+    Linking.openURL('mailto:support@statusbag.com?subject=Support%20Request').catch(() => {
+      Alert.alert('Error', 'Unable to open email client.');
     });
   };
+
 
   const handleStoragePath = () => {
     Alert.alert('Storage Path', 'Your statuses are saved in the Pictures/StatusBag and Download/StatusBag folders on your internal storage.');
@@ -73,7 +84,7 @@ export default function SettingsScreen({navigation}) {
 
   return (
     <View style={styles.safe}>
-      <Header 
+      <Header
         title="App Settings"
         leftIcon="arrow-back-ios"
         onLeftPress={() => navigation.goBack()}
@@ -84,7 +95,7 @@ export default function SettingsScreen({navigation}) {
         {/* ACCOUNT */}
         <Section title="Account" />
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.row}
           onPress={() => navigation.navigate('Pricing')}>
           <View style={styles.rowLeft}>
@@ -99,7 +110,7 @@ export default function SettingsScreen({navigation}) {
             </View>
           </View>
           <Icon name="chevron-right" size={24} color={colors.grayMedium} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <Divider />
 
@@ -116,7 +127,7 @@ export default function SettingsScreen({navigation}) {
           <Switch
             value={autoSave}
             onValueChange={handleAutoSaveToggle}
-            trackColor={{false: colors.grayLight, true: colors.primary}}
+            trackColor={{ false: colors.grayLight, true: colors.primary }}
             thumbColor={colors.white}
           />
         </View>
@@ -133,7 +144,7 @@ export default function SettingsScreen({navigation}) {
           <Switch
             value={notifications}
             onValueChange={handleNotificationsToggle}
-            trackColor={{false: colors.grayLight, true: colors.primary}}
+            trackColor={{ false: colors.grayLight, true: colors.primary }}
             thumbColor={colors.white}
           />
         </View>
@@ -156,11 +167,18 @@ export default function SettingsScreen({navigation}) {
         {/* SUPPORT */}
         <Section title="Support" />
 
+        <SettingsLink icon="system-update" label="Check for Updates" onPress={() => checkForUpdates(true)} />
+        <Divider />
         <SettingsLink icon="star" label="Rate Us" onPress={handleRateUs} />
         <Divider />
         <SettingsLink icon="share" label="Share App" onPress={handleShareApp} />
         <Divider />
+        <SettingsLink icon="mail-outline" label="Contact Support" onPress={handleContactSupport} />
+        <Divider />
         <SettingsLink icon="verified-user" label="Privacy Policy" onPress={handlePrivacyPolicy} />
+        <Divider />
+        <SettingsLink icon="description" label="Terms of Service" onPress={handleTermsOfService} />
+
 
         {/* FOOTER */}
         <View style={styles.footer}>
@@ -174,7 +192,7 @@ export default function SettingsScreen({navigation}) {
 
 /* ---------------- COMPONENTS ---------------- */
 
-function Section({title}) {
+function Section({ title }) {
   return <Text style={styles.section}>{title}</Text>;
 }
 
@@ -182,7 +200,7 @@ function Divider() {
   return <View style={styles.divider} />;
 }
 
-function SettingsLink({icon, label, onPress}) {
+function SettingsLink({ icon, label, onPress }) {
   return (
     <TouchableOpacity style={styles.row} onPress={onPress}>
       <View style={styles.rowLeft}>

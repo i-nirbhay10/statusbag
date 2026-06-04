@@ -1,14 +1,18 @@
 import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, StatusBar} from 'react-native';
+import {View, Text, StyleSheet, StatusBar, Image} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Loader from '../components/Loader';
 import colors from '../theme/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useAppUpdate} from '../hooks/useAppUpdate';
 
 const SplashScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
+  const { checkForUpdates } = useAppUpdate();
 
   useEffect(() => {
+    checkForUpdates(false);
+    
     const timer = setTimeout(() => {
       navigation.replace('RootDrawer');
     }, 2000);
@@ -28,13 +32,12 @@ const SplashScreen = ({navigation}) => {
 
       {/* Center Content */}
       <View style={styles.centerContent}>
-        {/* App Icon */}
-        <View style={styles.iconWrapper}>
-          <Icon name="folder-zip" size={72} color={colors.white} />
-          <View style={styles.downloadIcon}>
-            <Icon name="file-download" size={32} color={colors.white} />
-          </View>
-        </View>
+        {/* App Logo */}
+        <Image 
+          source={require('../assets/statusbagLogo.png')} 
+          style={styles.logo}
+          resizeMode="contain"
+        />
 
         {/* App Name */}
         <Text style={styles.title}>StatusBag</Text>
@@ -62,22 +65,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 24,
   },
-  iconWrapper: {
-    width: 128,
-    height: 128,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: {width: 0, height: 8},
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  downloadIcon: {
-    position: 'absolute',
-    bottom: 24,
+  logo: {
+    width: 160,
+    height: 160,
+    marginBottom: 8,
   },
   title: {
     fontSize: 32,

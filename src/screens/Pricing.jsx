@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+  Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -16,6 +18,32 @@ import colors from '../theme/colors';
 
 export default function Pricing() {
   const navigation = useNavigation();
+
+  const handleUpgrade = async () => {
+    try {
+      await AsyncStorage.setItem('isPro', 'true');
+      Alert.alert('Success', 'You have successfully upgraded to Pro!', [
+        { text: 'Awesome!', onPress: () => navigation.goBack() }
+      ]);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to complete upgrade.');
+    }
+  };
+
+  const handleRestore = async () => {
+    try {
+      const isPro = await AsyncStorage.getItem('isPro');
+      if (isPro === 'true') {
+        Alert.alert('Restored', 'Your Pro purchase has been restored!', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      } else {
+        Alert.alert('No Purchase Found', 'We could not find a previous Pro purchase.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to restore purchase.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -136,13 +164,15 @@ export default function Pricing() {
 
         {/* CTA */}
         <View style={styles.ctaSection}>
-          <LinearGradient
-            colors={['#D4AF37', colors.primary]}
-            start={{x: 0, y: 0}}
-            end={{x: 1, y: 1}}
-            style={styles.ctaButton}>
-            <Text style={styles.ctaText}>Upgrade to Pro</Text>
-          </LinearGradient>
+          <TouchableOpacity onPress={handleUpgrade}>
+            <LinearGradient
+              colors={['#D4AF37', colors.primary]}
+              start={{x: 0, y: 0}}
+              end={{x: 1, y: 1}}
+              style={styles.ctaButton}>
+              <Text style={styles.ctaText}>Upgrade to Pro</Text>
+            </LinearGradient>
+          </TouchableOpacity>
           <Text style={styles.ctaDisclaimer}>
             By subscribing, you agree to our Terms of Service and Privacy
             Policy. Subscriptions renew automatically unless cancelled.
@@ -150,7 +180,7 @@ export default function Pricing() {
         </View>
 
         {/* Footer */}
-        <TouchableOpacity style={styles.footerButton}>
+        <TouchableOpacity style={styles.footerButton} onPress={handleRestore}>
           <Text style={styles.footerButtonText}>Restore Purchase</Text>
         </TouchableOpacity>
       </ScrollView>

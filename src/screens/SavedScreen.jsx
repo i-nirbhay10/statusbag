@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  Share,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {useNavigation, useIsFocused} from '@react-navigation/native';
@@ -91,6 +92,17 @@ export default function SavedScreen() {
     ]);
   };
 
+  const handleShare = async (path) => {
+    try {
+      await Share.share({
+        url: 'file://' + path,
+        message: 'Check out this status from StatusBag!',
+      });
+    } catch (error) {
+      console.log('Share error:', error);
+    }
+  };
+
   const filteredData = savedMedia.filter(item =>
     filter === 'Images' ? item.type === 'image' : item.type === 'video',
   );
@@ -119,6 +131,7 @@ export default function SavedScreen() {
       
       <View style={styles.gridButtons}>
         <TouchableOpacity
+          onPress={() => handleShare(item.path)}
           style={[
             styles.iconButton,
             {backgroundColor: 'rgba(255,255,255,0.2)'},

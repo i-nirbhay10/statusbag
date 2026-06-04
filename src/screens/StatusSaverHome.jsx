@@ -134,6 +134,37 @@ export default function StatusSaverHome() {
 
   /* ---------------- Load Statuses ---------------- */
 
+  const performAutoSave = async (files) => {
+    try {
+      const autoSaveOn = await AsyncStorage.getItem('autoSave');
+      if (autoSaveOn !== 'true') return;
+
+      console.log('[AutoSave] Starting background auto-save for', files.length, 'files');
+
+      for (const file of files) {
+        const isVideoItem = file.name.endsWith('.mp4');
+        const destDir = isVideoItem ? RNFS.DownloadDirectoryPath : RNFS.PicturesDirectoryPath;
+        const folderPath = `${destDir}/StatusBag`;
+        
+        const folderExists = await RNFS.exists(folderPath);
+        if (!folderExists) {
+          await RNFS.mkdir(folderPath);
+        }
+
+        const destPath = `${folderPath}/${file.name}`;
+        const fileExists = await RNFS.exists(destPath);
+        if (!fileExists) {
+           const rawSource = file.path.replace('file://', '');
+           await RNFS.copyFile(rawSource, destPath).catch(() => {});
+           RNFS.scanFile(destPath).catch(() => {});
+        }
+      }
+      console.log('[AutoSave] Finished background auto-save');
+    } catch (e) {
+      console.error('[AutoSave] Error during auto-save:', e);
+    }
+  };
+
   const loadStatuses = async (isRefresh = false) => {
     console.log('[Status] Load started. Refresh:', isRefresh);
     console.log('[Status] Active tab:', activeTab);
@@ -180,6 +211,9 @@ export default function StatusSaverHome() {
       );
 
       setStatuses(filtered);
+      
+      // Trigger background auto-save
+      performAutoSave(filtered);
     } catch (error) {
       console.error('[Status] Failed to load statuses:', error);
       setStatuses([]);
